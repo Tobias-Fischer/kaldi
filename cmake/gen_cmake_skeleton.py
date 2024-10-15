@@ -247,9 +247,9 @@ class CMakeListsLibrary(object):
 
         if len(self.cuda_source_list) > 0:
             self.source_list.append("${CUDA_OBJS}")
-            ret.append("if(CUDA_FOUND)")
-            ret.append("    cuda_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)")
-            ret.append("    cuda_compile(CUDA_OBJS SHARED")
+            ret.append("if(CUDAToolkit_FOUND)")
+            ret.append("    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)")
+            ret.append("    set(CUDA_OBJS")
             for f in self.cuda_source_list:
                 ret.append("        " + f)
             ret.append("    )")
