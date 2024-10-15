@@ -265,7 +265,7 @@ if(TENSORFLOW_DIR)
 endif()
 
 # add all cuda libraries
-if(CUDA_FOUND)
+if(CUDAToolkit_FOUND)
     add_subdirectory(src/cudafeat)
     add_subdirectory(src/cudadecoder)
 endif()
@@ -290,7 +290,7 @@ endif()
 add_subdirectory(src/kwsbin)
 
 # add all cuda executables
-if(CUDA_FOUND)
+if(CUDAToolkit_FOUND)
     add_subdirectory(src/cudafeatbin)
     add_subdirectory(src/cudadecoderbin)
 endif()
