@@ -166,41 +166,40 @@ if(MSVC)
     endif()
 endif()
 
-find_package(CUDAToolkit)
-find_package(CUDA)
-if(CUDA_FOUND)
-    set(CUDA_PROPAGATE_HOST_FLAGS ON)
+find_package(CUDAToolkit REQUIRED)
+if(CUDAToolkit_FOUND)
+    enable_language(CUDA)
     if(MSVC)
-        set(KALDI_CUDA_NVCC_FLAGS "--default-stream=per-thread") # Fixes incompatibility with cxx14 and cxx17 for Kaldi vs cuda in VS2019
+        # Fixes incompatibility with cxx14 and cxx17 for Kaldi vs cuda in VS2019
+        set(KALDI_CUDA_NVCC_FLAGS "--default-stream=per-thread") 
         list(APPEND KALDI_CUDA_NVCC_FLAGS "-Xcompiler /permissive-,/FS,/wd4819,/EHsc,/bigobj")
         list(APPEND KALDI_CUDA_NVCC_FLAGS "-Xcompiler /wd4018,/wd4244,/wd4267,/wd4291,/wd4305")
         list(APPEND CUDA_NVCC_FLAGS_RELEASE -Xcompiler /MD) # Kaldi will always be dynamically linked to Cuda
         list(APPEND CUDA_NVCC_FLAGS_DEBUG -Xcompiler /MDd)
     else()
-    #     list(APPEND KALDI_CUDA_NVCC_FLAGS "-Xcompiler -std=c++${CMAKE_CXX_STANDARD}")
         list(APPEND KALDI_CUDA_NVCC_FLAGS "-Xcompiler -fPIC")
         set(KALDI_CUDA_NVCC_FLAGS "--default-stream=per-thread;-std=c++${CMAKE_CXX_STANDARD}")
     endif()
-    set(CUDA_NVCC_FLAGS ${KALDI_CUDA_NVCC_FLAGS} ${CUDA_NVCC_FLAGS})
+
+    set(CMAKE_CUDA_FLAGS "${KALDI_CUDA_NVCC_FLAGS} ${CMAKE_CUDA_FLAGS}")
 
     add_definitions(-DHAVE_CUDA=1)
     add_definitions(-DCUDA_API_PER_THREAD_DEFAULT_STREAM=1)
-    link_libraries(
-        ${CUDA_LIBRARIES}
-        ${CUDA_CUDA_LIBRARY}
-        ${CUDA_CUBLAS_LIBRARIES}
-        ${CUDA_CUFFT_LIBRARIES}
-        ${CUDA_curand_LIBRARY}
-        ${CUDA_cusolver_LIBRARY}
-        ${CUDA_cusparse_LIBRARY})
+
+    target_link_libraries(${PROJECT_NAME} PUBLIC 
+        CUDA::cudart 
+        CUDA::cublas 
+        CUDA::cufft 
+        CUDA::curand 
+        CUDA::cusolver 
+        CUDA::cusparse)
 
     find_package(NvToolExt REQUIRED)
-    include_directories(${NvToolExt_INCLUDE_DIR})
-    link_libraries(${NvToolExt_LIBRARIES})
-
+    target_include_directories(${PROJECT_NAME} PUBLIC ${NvToolExt_INCLUDE_DIR})
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${NvToolExt_LIBRARIES})
 
     find_package(CUB REQUIRED)
-    include_directories(${CUB_INCLUDE_DIR})
+    target_include_directories(${PROJECT_NAME} PUBLIC ${CUB_INCLUDE_DIR})
 endif()
 
 add_definitions(-DKALDI_NO_PORTAUDIO=1)
